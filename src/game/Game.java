@@ -112,7 +112,7 @@ public class Game {
   * Metoda loadMap otevře soubor a jeho obsah reprezentující mapu bludiště
   * zapíše do řetězce. Ignorují se přitom mezery a konce řádků.
   * Při neexistenci vstupního souboru se zachytí výjimka FileNotFoundException.
-  * @param název vstupního souboru
+  * @param fileName vstupního souboru
   * @return řetězec s obsahem vstupního souboru
   */
   public String loadMap(String fileName) {
