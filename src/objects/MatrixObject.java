@@ -56,14 +56,12 @@ public abstract class MatrixObject{
     * z množiny {stena, brána, kľúč, cieľ}, inak vracia null.
     */
    public static MatrixObject create(String format){
-       if(format.equals("w")){
-           return new Wall();
-       }else if(format.equals("g")){
-           return new Gate();
-       }else if(format.equals("f")){
-           return new Finish();
-       }else if(format.equals("k")){
-           return new Key();  
-       }else return null;
+      switch(format) {
+        case "w": return new Wall();
+        case "g": return new Gate();
+        case "f": return new Finish();
+        case "k": return new Key();
+        default: return null;
+      }
    }
 }
