@@ -6,6 +6,7 @@ import java.util.Scanner;
 import java.io.*;
 
 /**
+ * toto tu nebolo
  * Třída Game obsahuje metody readCommand a loadMap, viz jejich konkrétní popis.
  * Třída obsahuje atributy pro uchování informace jaká mapa je otevřena a kteří
  * hráči momentálně hrají a další pomocné informace.
