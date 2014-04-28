@@ -69,8 +69,9 @@ public class Matrix {
      * @return Vracia hráča v prípade úspešného obsadenia políčka, inak null.
      */
     public Player createPlayer(int id, int x, int y){
+        Player tmpplayer = new Player(id,map[x][y]);
         if(this.map[x][y].canSeize() == false) return null;
-        this.map[x][y].seize(player);
-        return new Player(id,map[x][y]);
+        this.map[x][y].seize(tmpplayer);
+        return tmpplayer;
     }
 }
