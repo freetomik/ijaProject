@@ -16,7 +16,7 @@ public class Game {
   protected Matrix map = null;
   protected Player player = null;
   protected boolean inGame = false;
-  protected int x = 0, y = 0, xp = 0, yp = 0;
+  protected int width = 0, height = 0, xp = 0, yp = 0;
   protected String fileContent = "";
 
   public void Game() {}
@@ -50,7 +50,7 @@ public class Game {
             fileName = words[1];
             this.fileContent = loadMap(fileName);
             this.inGame = true;
-            this.map = new Matrix(this.fileContent, this.x, this.y);
+            this.map = new Matrix(this.fileContent, this.width, this.height);
             this.player = this.map.createPlayer(1, this.xp, this.yp);
 
             System.out.println("game started with map from file " + fileName);
@@ -95,6 +95,10 @@ public class Game {
             System.out.println("Closing...");
             System.exit(0);
             break;
+          case "go":
+            while(this.player.step()) {
+
+            }
           default:
             System.out.println("wrong command");
             break;
@@ -125,20 +129,20 @@ public class Game {
       while(fileInput.hasNextLine()) {
         fileLine = fileInput.nextLine();  //cteni souboru po radcich
         len = fileLine.length();
-        this.x = 0;
+        this.width = 0;
         for(int i = 0; i < len; i++) {    //prochazeni radku po znacich
           c = fileLine.charAt(i);
           if(c != ' ') {      //ignorace mezer
             if(c == 'p') {    //nalezeni hrace a ulozeni jeho pocatecni pozice
-              this.yp = this.y;
-              this.xp = this.x;
+              this.yp = this.height;
+              this.xp = this.width;
             }
             this.fileContent += c;  //pridani znaku do vystupniho retezce
-            this.x++;
+            this.width++;
           }
         }
         //System.out.println(fileLine);
-        this.y++;
+        this.height++;
       }
       fileInput.close();
       //System.out.println("rows: " + this.y);
