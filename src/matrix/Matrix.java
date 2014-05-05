@@ -5,8 +5,6 @@
  */
 
 package matrix;
-import game.MapFeed;
-
 
 /**
  * Je trieda ktorá uchováva informácie o mape a hráčoch.
@@ -18,7 +16,6 @@ public class Matrix {
      * Je dvojrozmerené pole reprezentujúce hraciu plochu. 
      */
     protected MatrixField[][] map;
-    protected MapFeed mapFeed;
     
     /**
      * Konštruktor vytvorý mapu podla zadanej velkosti a naplní ju objektami.
@@ -26,9 +23,8 @@ public class Matrix {
      * @param x je počet stĺpcov mapy
      * @param y je počet riadkov mapy
      */
-    public Matrix(String fileContent, int x, int y, MapFeed mapFeed){
+    public Matrix(String fileContent, int x, int y){
         this.map = new MatrixField[x][y];
-        this.mapFeed = mapFeed;
         
         for(int i=0; i<y ; i++){
             for(int j=0; j<x; j++){
@@ -70,11 +66,6 @@ public class Matrix {
             }
         }
         return mapString;
-    }
-    
-    //reprezentuje producenta map
-    public synchronized void updateMap(){
-        mapFeed.putMap(this.getMapString());
     }
     
     /**
