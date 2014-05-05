@@ -15,17 +15,19 @@ public class Player {
     protected MatrixField field;
     protected int direction;
     protected int keys;
+    protected Matrix map;
     
     /**
      * 
      * @param id identifikačné číslo hráča
      * @param field políčko ktoré je obsadené týmto hráčom
      */
-    public Player(int id, MatrixField field){
+    public Player(int id, MatrixField field, Matrix map){
         this.id = id;
         this.field = field;
         this.direction = 0;
         this.keys = 0;
+        this.map = map;
     }
     
     /**
@@ -34,6 +36,7 @@ public class Player {
     public void turnRight(){
         if(direction == 0) direction = 3;
         else --direction;
+        map.updateMap();
     }
     
     /**
@@ -42,6 +45,7 @@ public class Player {
     public void turnLeft(){
         if(direction == 3) direction = 0;
         else ++direction;
+        map.updateMap();
     }
     
     /**
@@ -57,6 +61,7 @@ public class Player {
                 this.field.leave();
                 targetF.seize(this);
                 this.field = targetF;
+                map.updateMap();
                 return true;
             }
         }
@@ -93,6 +98,7 @@ public class Player {
             if(targetF.canTake()){
                 targetF.removeObj();
                 this.keys++;
+                map.updateMap();
                 return true;
             }
         }
@@ -114,6 +120,7 @@ public class Player {
                 if(targetF.canBeOpen()){
                     this.keys--;
                     targetF.open();
+                    map.updateMap();
                     return true;
                 }
             }

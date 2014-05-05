@@ -18,6 +18,7 @@ public class Game {
   protected boolean inGame = false;
   protected int width = 0, height = 0, xp = 0, yp = 0;
   protected String fileContent = "";
+  protected MapFeed mapFeed;
 
   public void Game() {}
 
@@ -32,6 +33,25 @@ public class Game {
    *  na cílové políčko.
   */
   public void readCommand() throws IOException {
+      
+      //vypisuje updaty mapy na obrazovku, reprezentuje tak konzumenta map
+      Runnable gameUpdate = new Runnable() {
+                    public void run() {
+                        System.out.println("Vlakno gameUpdate zacalo !!!");
+                        int x = mapFeed.getX();
+                        int y = mapFeed.getY();
+                        while(true){
+                            String mapString = mapFeed.getMap();
+                            for(int i=0; i<y ; i++){
+                                for(int j=0; j<x; j++){
+                                    String znak = mapString.substring(i*x+j,i*x+j+1);
+                                    System.out.print(znak);
+                                }
+                                System.out.println();
+                            }
+                        }
+                    }
+                };
 
     String command, words[], fileName;
     Scanner CLInput = new Scanner(System.in);
@@ -50,10 +70,15 @@ public class Game {
             fileName = words[1];
             this.fileContent = loadMap(fileName);
             this.inGame = true;
-            this.map = new Matrix(this.fileContent, this.width, this.height);
+            //new mapfeed
+            mapFeed = new MapFeed(width,height);
+            this.map = new Matrix(this.fileContent, this.width, this.height, this.mapFeed);
             this.player = this.map.createPlayer(1, this.xp, this.yp);
 
             System.out.println("game started with map from file " + fileName);
+            
+            //vlakno updatovania 
+            new Thread(gameUpdate).start();
           }
         }
         else {

@@ -5,6 +5,7 @@
  */
 
 package matrix;
+import game.MapFeed;
 
 
 /**
@@ -17,7 +18,7 @@ public class Matrix {
      * Je dvojrozmerené pole reprezentujúce hraciu plochu. 
      */
     protected MatrixField[][] map;
-    protected Player player;
+    protected MapFeed mapFeed;
     
     /**
      * Konštruktor vytvorý mapu podla zadanej velkosti a naplní ju objektami.
@@ -25,8 +26,9 @@ public class Matrix {
      * @param x je počet stĺpcov mapy
      * @param y je počet riadkov mapy
      */
-    public Matrix(String fileContent, int x, int y){
+    public Matrix(String fileContent, int x, int y, MapFeed mapFeed){
         this.map = new MatrixField[x][y];
+        this.mapFeed = mapFeed;
         
         for(int i=0; i<y ; i++){
             for(int j=0; j<x; j++){
@@ -60,6 +62,21 @@ public class Matrix {
         }
     }
     
+    public String getMapString(){
+        String mapString = "";
+        for(int i=0; i<map[0].length ; i++){
+            for(int j=0; j<map.length; j++){
+                mapString = mapString.concat(this.map[j][i].getType());
+            }
+        }
+        return mapString;
+    }
+    
+    //reprezentuje producenta map
+    public synchronized void updateMap(){
+        mapFeed.putMap(this.getMapString());
+    }
+    
     /**
      * Vytvorí nového hráča, priradí mu identifikačné číslo a pokúsi
      * sa ním obsadiť políčko na zadaných súradniciach.
@@ -69,9 +86,16 @@ public class Matrix {
      * @return Vracia hráča v prípade úspešného obsadenia políčka, inak null.
      */
     public Player createPlayer(int id, int x, int y){
-        Player tmpplayer = new Player(id,map[x][y]);
+        Player tmpplayer = new Player(id,map[x][y], this);
         if(this.map[x][y].canSeize() == false) return null;
         this.map[x][y].seize(tmpplayer);
         return tmpplayer;
+    }
+    
+    public Zombie createZombie(int id, int x, int y){
+        Zombie tmpzombie = new Zombie(id,map[x][y],this);
+        if(this.map[x][y].canSeize() == false) return null;
+        this.map[x][y].seize(tmpzombie);
+        return tmpzombie;
     }
 }
