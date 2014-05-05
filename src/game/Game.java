@@ -4,6 +4,7 @@ import matrix.*;
 
 import java.util.Scanner;
 import java.io.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Třída Game obsahuje metody readCommand a loadMap, viz jejich konkrétní popis.
@@ -14,127 +15,99 @@ import java.io.*;
 public class Game {
   
   protected Matrix map = null;
-  protected Player player = null;
-  protected boolean inGame = false;
-  protected int width = 0, height = 0, xp = 0, yp = 0;
+  protected Player[] players;
+  protected Zombie[] zombies;
+  protected String mapName = "";
   protected String fileContent = "";
-  protected MapFeed mapFeed;
+  protected int gameID;
+  protected int width = 0, height = 0;
+  protected int playersCount;
+  protected int[] clientIDs;
+  protected int[] spawnPoints;
+  protected float delay;    //delay mezi kroky v prikazu go
+  protected long gameStartTime;
+  protected LinkedBlockingQueue messagesOUT;
 
-  public void Game() {}
+  public void Game(String mapNameDelay, int gameID, LinkedBlockingQueue messagesOUT) {
+    String MNDParse[];
+    MNDParse = mapNameDelay.split(":");
+    this.mapName = MNDParse[0];
+    this.delay = Float.parseFloat(MNDParse[1]);
+    this.gameID = gameID;
+    this.messagesOUT = messagesOUT;
+    this.playersCount = 0;
+  }
 
   /**
-   *  Metoda readCommand čeká na uživatelovy příkazy a reaguje na ně.
-   *  Rozlišují se přitom dva módy, před a po otevření hry.
-   *  Před otevřením hry jsou možné dva příkazy, otevření hry a ukončení programu.
-   *  Ve hře jsou k dispozici příkazy pro ovládání hry a taky příkaz k ukončení.
-   *  Příkazy pro ovládání hráče mu zasílají zprávy, jakou operaci má provést.
-   *  Příkaz show invokuje metodu objektu hrací mapy, slouží k jejímu výpisu.
-   *  Hra je ukončena zadáním příkazu close nebo když se postavička hráče dostane
-   *  na cílové políčko.
-  */
-  public void readCommand() throws IOException {
-      
-      //vypisuje updaty mapy na obrazovku, reprezentuje tak konzumenta map
-      Runnable gameUpdate = new Runnable() {
-                    public void run() {
-                        System.out.println("Vlakno gameUpdate zacalo !!!");
-                        int x = mapFeed.getX();
-                        int y = mapFeed.getY();
-                        while(true){
-                            String mapString = mapFeed.getMap();
-                            for(int i=0; i<y ; i++){
-                                for(int j=0; j<x; j++){
-                                    String znak = mapString.substring(i*x+j,i*x+j+1);
-                                    System.out.print(znak);
-                                }
-                                System.out.println();
-                            }
-                        }
-                    }
-                };
-
-    String command, words[], fileName;
-    Scanner CLInput = new Scanner(System.in);
-
-    while(true) {
-      command = CLInput.nextLine();
-      
-      if(!this.inGame) {
-        if(command.equals("close")) {
-          System.out.println("Closing...");
-          break;
-        }
-        words = command.split(" ");   //rozdelim vstup na slova po mezerach
-        if(words[0].equals("game")) {
-          if(words.length > 1) {
-            fileName = words[1];
-            this.fileContent = loadMap(fileName);
-            this.inGame = true;
-            //new mapfeed
-            mapFeed = new MapFeed(width,height);
-            this.map = new Matrix(this.fileContent, this.width, this.height, this.mapFeed);
-            this.player = this.map.createPlayer(1, this.xp, this.yp);
-
-            System.out.println("game started with map from file " + fileName);
-            
-            //vlakno updatovania 
-            new Thread(gameUpdate).start();
-          }
-        }
-        else {
-          System.out.println("wrong command");
+   * Pokud hra neni plne obsazena(4 hraci), vytvori noveho hrace na prvnim volnem spawn pointu v poradi.
+   * Hrace svaze s klientem pres pole clientsID, na indexu ID hrace prida ID klienta.
+   * @param clientID
+   * @return vraci zda se podarilo pridat hrace
+   */
+  public boolean addPlayer(int clientID) {
+    Player tmpPlayer = null;
+    if(this.playersCount < 4) {
+      this.clientIDs[this.playersCount++] = clientID;
+      for(int i = 0; i < this.spawnPoints.length; i+=2) {
+        tmpPlayer = this.map.createPlayer(this.playersCount, this.spawnPoints[i], this.spawnPoints[i+1]);
+        if(tmpPlayer != null) {
+          this.players[this.playersCount] = tmpPlayer;
+          return true;
         }
       }
+    }
+    return false;
+  }
 
-      else if(this.inGame) {
-        switch(command) {
-          case "step":
-            if(this.player.step()) System.out.println("stepped forward");
-            else System.out.println("could not step forward");
-            if(this.player.finished()) {
-              System.out.println("player " + 1 + " won !!!");
-              System.exit(0);
-            } 
-            break;
-          case "right":
-            this.player.turnRight();
-            break;
-          case "left":
-            this.player.turnLeft();
-            break;
-          case "take":
-            if(this.player.take()) System.out.println("key was taken");
-            else System.out.println("could not take the key");
-            break;
-          case "open":
-            if(this.player.open()) System.out.println("gate was open");
-            else System.out.println("could not open the gate");
-            break;
-          case "keys":
-            System.out.println("num of keys: " + this.player.getKeys());
-            break;
-          case "show":
-            this.map.showMap();
-            break;
-          case "close":
-            System.out.println("Closing...");
-            System.exit(0);
-            break;
-          case "go":
-            while(this.player.step()) {
+  public boolean executeCommand(int clientID, String command) throws IOException {
+      
+    String fileName;
 
-            }
-          default:
-            System.out.println("wrong command");
-            break;
-        }//switch
-      }//game mode
+//    switch(command) {
+//      case "step":
+//        if(this.player.step()) System.out.println("stepped forward");
+//        else System.out.println("could not step forward");
+//        if(this.player.finished()) {
+//          System.out.println("player " + 1 + " won !!!");
+//          System.exit(0);
+//        } 
+//        break;
+//      case "right":
+//        this.player.turnRight();
+//        break;
+//      case "left":
+//        this.player.turnLeft();
+//        break;
+//      case "take":
+//        if(this.player.take()) System.out.println("key was taken");
+//        else System.out.println("could not take the key");
+//        break;
+//      case "open":
+//        if(this.player.open()) System.out.println("gate was open");
+//        else System.out.println("could not open the gate");
+//        break;
+//      case "keys":
+//        System.out.println("num of keys: " + this.player.getKeys());
+//        break;
+//      case "show":
+//        this.map.showMap();
+//        break;
+//      case "close":
+//        System.out.println("Closing...");
+//        System.exit(0);
+//        break;
+//      case "go":
+//        while(this.player.step()) {
+//
+//        }
+//      default:
+//        System.out.println("wrong command");
+//        break;
+//    }//switch
+//
+//    System.out.println("End.");
 
-      System.out.print(((this.inGame) ? "[game]" : "[menu]") + "next command: ");
-
-    }//cyklus nacitani prikazu
-
-    System.out.println("End.");
+    return true;
 
   }
   /**
@@ -145,10 +118,11 @@ public class Game {
   * @return řetězec s obsahem vstupního souboru
   */
   public String loadMap(String fileName) {
-    int len;     //all - vsechny nebile znaky v souboru, len - delka radku
+    int sp = 0, len;     //sp - index do pole spawn pointu, len - delka radku
     char c;
     String fileLine;
     Scanner fileInput;
+    this.spawnPoints = new int[7];
     try {
       fileInput = new Scanner(new FileReader(fileName));
       while(fileInput.hasNextLine()) {
@@ -158,9 +132,9 @@ public class Game {
         for(int i = 0; i < len; i++) {    //prochazeni radku po znacich
           c = fileLine.charAt(i);
           if(c != ' ') {      //ignorace mezer
-            if(c == 'p') {    //nalezeni hrace a ulozeni jeho pocatecni pozice
-              this.yp = this.height;
-              this.xp = this.width;
+            if(c == 'p' && sp < 7) {    //nacitani spawn pointu, max sedm
+              this.spawnPoints[sp++] = this.width;
+              this.spawnPoints[sp++] = this.height;
             }
             this.fileContent += c;  //pridani znaku do vystupniho retezce
             this.width++;
@@ -172,7 +146,7 @@ public class Game {
       fileInput.close();
       //System.out.println("rows: " + this.y);
       //System.out.println("columns: " + this.x);
-}
+    }
     catch(FileNotFoundException e) {
 //      e.printStackTrace();
       System.out.println("File " + fileName + " does not exist.");
