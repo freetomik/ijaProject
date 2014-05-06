@@ -1,6 +1,8 @@
 package game;
 
 import matrix.*;
+import net.*;
+import serialMessage.*;
 
 import java.util.Scanner;
 import java.io.*;
@@ -14,6 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Game {
   
+  protected Server server;
   protected Matrix map = null;
   protected Player[] players;
   protected Zombie[] zombies;
@@ -28,13 +31,16 @@ public class Game {
   protected long gameStartTime;
   protected LinkedBlockingQueue messagesOUT;
 
-  public void Game(String mapNameDelay, int gameID, LinkedBlockingQueue messagesOUT) {
+  public void Game(String mapNameDelay, int gameID, Server server) {
     String MNDParse[];
     MNDParse = mapNameDelay.split(":");
+    this.server = server;
     this.mapName = MNDParse[0];
-    this.delay = Float.parseFloat(MNDParse[1]);
+    this.delay = Float.parseFloat(MNDParse[2]);
     this.gameID = gameID;
-    this.messagesOUT = messagesOUT;
+    this.players = new Player[4];
+    this.zombies = new Zombie[2];
+    this.spawnPoints = new int[14];
     this.playersCount = 0;
   }
 
@@ -52,6 +58,7 @@ public class Game {
         tmpPlayer = this.map.createPlayer(this.playersCount, this.spawnPoints[i], this.spawnPoints[i+1]);
         if(tmpPlayer != null) {
           this.players[this.playersCount] = tmpPlayer;
+          this.playersCount++;
           return true;
         }
       }
@@ -61,53 +68,68 @@ public class Game {
 
   public boolean executeCommand(int clientID, String command) throws IOException {
       
-    String fileName;
+    Player selectedPlayer = null;
+    Message returnMessage = new Message();
+    int playerIndex = 0;
+    boolean returnCode;
 
-//    switch(command) {
-//      case "step":
-//        if(this.player.step()) System.out.println("stepped forward");
-//        else System.out.println("could not step forward");
-//        if(this.player.finished()) {
-//          System.out.println("player " + 1 + " won !!!");
-//          System.exit(0);
-//        } 
-//        break;
-//      case "right":
-//        this.player.turnRight();
-//        break;
-//      case "left":
-//        this.player.turnLeft();
-//        break;
-//      case "take":
-//        if(this.player.take()) System.out.println("key was taken");
-//        else System.out.println("could not take the key");
-//        break;
-//      case "open":
-//        if(this.player.open()) System.out.println("gate was open");
-//        else System.out.println("could not open the gate");
-//        break;
-//      case "keys":
-//        System.out.println("num of keys: " + this.player.getKeys());
-//        break;
-//      case "show":
-//        this.map.showMap();
-//        break;
-//      case "close":
-//        System.out.println("Closing...");
-//        System.exit(0);
-//        break;
+    returnMessage.setCode(2);
+
+    for(int i : clientIDs)
+      if(clientID == clientIDs[i]) {
+        selectedPlayer = players[i];
+        playerIndex = i;
+        break;
+      }
+    
+    if(selectedPlayer == null) return false;
+    
+    switch(command) {
+      case "step":
+        if((returnCode = selectedPlayer.step()) == true)
+          returnMessage.setContent("stepped forward");
+        else
+          returnMessage.setContent("could not step forward");
+        if(selectedPlayer.finished()) {
+          returnMessage.setContent("player " + playerIndex + " won !!!");
+        } 
+        break;
+      case "right":
+        selectedPlayer.turnRight();
+        returnCode = true;
+        break;
+      case "left":
+        selectedPlayer.turnLeft();
+        returnCode = true;
+        break;
+      case "take":
+        if((returnCode = selectedPlayer.take()) == true) returnMessage.setContent("key was taken");
+        else returnMessage.setContent("could not take the key");
+        break;
+      case "open":
+        if((returnCode = selectedPlayer.open()) == true) returnMessage.setContent("gate was open");
+        else returnMessage.setContent("could not open the gate");
+        break;
+      case "keys":
+        returnMessage.setContent("num of keys: " + selectedPlayer.getKeys());
+        returnCode = true;
+        break;
+      case "show":
+        this.map.showMap();
+        returnCode = true;
+        break;
 //      case "go":
-//        while(this.player.step()) {
+//        while((returnCode = selectedPlayer.step()) == true) {
 //
 //        }
-//      default:
-//        System.out.println("wrong command");
-//        break;
-//    }//switch
-//
-//    System.out.println("End.");
+      default:
+        returnMessage.setContent("wrong command");
+        returnCode = false;
+        break;
+    }//switch
 
-    return true;
+    this.server.addMessageOUT(returnMessage); 
+    return returnCode;
 
   }
   /**
@@ -122,7 +144,6 @@ public class Game {
     char c;
     String fileLine;
     Scanner fileInput;
-    this.spawnPoints = new int[7];
     try {
       fileInput = new Scanner(new FileReader(fileName));
       while(fileInput.hasNextLine()) {
