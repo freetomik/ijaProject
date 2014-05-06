@@ -29,13 +29,14 @@ public class Game {
   protected float delay;    //delay mezi kroky v prikazu go
   protected long gameStartTime;
 
-  public void Game(String mapNameDelay, int gameID, Server server) {
+  public Game(String mapNameDelay, int gameID, Server server) {
     String MNDParse[];
     MNDParse = mapNameDelay.split(":");
+    this.mapName = MNDParse[0]+MNDParse[1];
+    this.delay = Float.parseFloat(MNDParse[2]);
+    loadMap(this.mapName);  //ulozim si obsah souboru do fileContent
     this.server = server;
     this.map = new Matrix(this.fileContent, this.width, this.height);
-    this.mapName = MNDParse[0];
-    this.delay = Float.parseFloat(MNDParse[2]);
     this.gameID = gameID;
     this.players = new Player[4];
     this.zombies = new Zombie[2];
@@ -170,6 +171,10 @@ public class Game {
 //      e.printStackTrace();
       System.out.println("File " + fileName + " does not exist.");
     } 
-  }
+}
 
+public String getMapName() {
+  return this.mapName;
+}
+  
 }
