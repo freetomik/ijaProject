@@ -36,7 +36,6 @@ public class Player {
     public void turnRight(){
         if(direction == 0) direction = 3;
         else --direction;
-        map.updateMap();
     }
     
     /**
@@ -45,7 +44,6 @@ public class Player {
     public void turnLeft(){
         if(direction == 3) direction = 0;
         else ++direction;
-        map.updateMap();
     }
     
     /**
@@ -61,7 +59,6 @@ public class Player {
                 this.field.leave();
                 targetF.seize(this);
                 this.field = targetF;
-                map.updateMap();
                 return true;
             }
         }
@@ -98,7 +95,6 @@ public class Player {
             if(targetF.canTake()){
                 targetF.removeObj();
                 this.keys++;
-                map.updateMap();
                 return true;
             }
         }
@@ -120,7 +116,6 @@ public class Player {
                 if(targetF.canBeOpen()){
                     this.keys--;
                     targetF.open();
-                    map.updateMap();
                     return true;
                 }
             }
