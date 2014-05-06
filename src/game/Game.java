@@ -6,7 +6,6 @@ import serialMessage.*;
 
 import java.util.Scanner;
 import java.io.*;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Třída Game obsahuje metody readCommand a loadMap, viz jejich konkrétní popis.
@@ -29,12 +28,12 @@ public class Game {
   protected int[] spawnPoints;
   protected float delay;    //delay mezi kroky v prikazu go
   protected long gameStartTime;
-  protected LinkedBlockingQueue messagesOUT;
 
   public void Game(String mapNameDelay, int gameID, Server server) {
     String MNDParse[];
     MNDParse = mapNameDelay.split(":");
     this.server = server;
+    this.map = new Matrix(this.fileContent, this.width, this.height);
     this.mapName = MNDParse[0];
     this.delay = Float.parseFloat(MNDParse[2]);
     this.gameID = gameID;
@@ -137,9 +136,8 @@ public class Game {
   * zapíše do řetězce. Ignorují se přitom mezery a konce řádků.
   * Při neexistenci vstupního souboru se zachytí výjimka FileNotFoundException.
   * @param fileName vstupního souboru
-  * @return řetězec s obsahem vstupního souboru
   */
-  public String loadMap(String fileName) {
+  public void loadMap(String fileName) {
     int sp = 0, len;     //sp - index do pole spawn pointu, len - delka radku
     char c;
     String fileLine;
@@ -172,7 +170,6 @@ public class Game {
 //      e.printStackTrace();
       System.out.println("File " + fileName + " does not exist.");
     } 
-    return this.fileContent;
   }
 
 }
