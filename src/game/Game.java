@@ -32,15 +32,16 @@ public class Game {
   public Game(String mapNameDelay, int gameID, Server server) {
     String MNDParse[];
     MNDParse = mapNameDelay.split(":");
-    this.mapName = MNDParse[0]+MNDParse[1];
+    this.mapName = MNDParse[0]+":"+MNDParse[1];
     this.delay = Float.parseFloat(MNDParse[2]);
+    this.spawnPoints = new int[14];
     loadMap(this.mapName);  //ulozim si obsah souboru do fileContent
     this.server = server;
     this.map = new Matrix(this.fileContent, this.width, this.height);
     this.gameID = gameID;
     this.players = new Player[4];
+    this.clientIDs = new int[4];
     this.zombies = new Zombie[2];
-    this.spawnPoints = new int[14];
     this.playersCount = 0;
   }
 

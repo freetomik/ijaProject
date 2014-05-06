@@ -29,7 +29,9 @@ public class Server {
 
     public Server(int port, final String maps) {
         clientList = new ArrayList<ConnectionToClient>();
+        gameList = new ArrayList<Game>();
         messagesIN = new LinkedBlockingQueue<Message>();
+        messagesOUT = new LinkedBlockingQueue<Message>();
         this.maps = maps;
         try {
             serverSocket = new ServerSocket(port);
@@ -52,6 +54,7 @@ public class Server {
                         msg.setContent("si klient cislo "+clientCounter); // tento parameter je irelevantny
                         sendToOne(clientCounter,msg);
                         
+                        msg = new Message();
                         //posleme klientovy dostupne mapy
                         msg.setCode(5);
                         msg.setContent(maps);
@@ -73,6 +76,9 @@ public class Server {
                     try{
                         Message message = (Message)messagesIN.take();
                         //handling message...
+                        System.out.println(message.getClienID());
+                        System.out.println(message.getContent());
+                        
                         if(message.getCode() == 1){
                             try {
                                 gameList.get(message.getGameID()).executeCommand(message.getClienID(),message.getContent());
@@ -113,7 +119,7 @@ public class Server {
                     try{
                         Message message = (Message)messagesOUT.take();
                         //handling message...
-                        
+                        sendToAll(message);
                     }
                     catch(InterruptedException e){ }
                 }
