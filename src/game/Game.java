@@ -37,7 +37,7 @@ public class Game {
     this.spawnPoints = new int[14];
     loadMap(this.mapName);  //ulozim si obsah souboru do fileContent
     this.server = server;
-    this.map = new Matrix(this.fileContent, this.width, this.height);
+    this.map = new Matrix(this.fileContent, this.width, this.height,server);
     this.gameID = gameID;
     this.players = new Player[4];
     this.clientIDs = new int[4];
@@ -54,7 +54,7 @@ public class Game {
   public boolean addPlayer(int clientID) {
     Player tmpPlayer = null;
     if(this.playersCount < 4) {
-      this.clientIDs[this.playersCount++] = clientID;
+      this.clientIDs[this.playersCount] = clientID;
       for(int i = 0; i < this.spawnPoints.length; i+=2) {
         tmpPlayer = this.map.createPlayer(this.playersCount, this.spawnPoints[i], this.spawnPoints[i+1]);
         if(tmpPlayer != null) {
@@ -76,15 +76,15 @@ public class Game {
 
     returnMessage.setCode(2);
 
-    for(int i : clientIDs)
+    for(int i = 0; i< this.clientIDs.length;i++){
       if(clientID == clientIDs[i]) {
         selectedPlayer = players[i];
         playerIndex = i;
         break;
       }
+    }
     
     if(selectedPlayer == null) return false;
-    
     switch(command) {
       case "step":
         if((returnCode = selectedPlayer.step()) == true)
@@ -97,10 +97,12 @@ public class Game {
         break;
       case "right":
         selectedPlayer.turnRight();
+        returnMessage.setContent("turned right");
         returnCode = true;
         break;
       case "left":
         selectedPlayer.turnLeft();
+        returnMessage.setContent("turned left");
         returnCode = true;
         break;
       case "take":

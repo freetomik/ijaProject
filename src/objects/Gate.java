@@ -60,6 +60,6 @@ public class Gate extends MatrixObject{
     @Override
     public String getType(){
         if(opened) return ".";
-        return "G";
+        return "g";
     }
 }

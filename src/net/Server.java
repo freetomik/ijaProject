@@ -69,6 +69,7 @@ public class Server {
         accept.setDaemon(true);
         accept.start();
 
+        //spracovanie sprav od klienta
         Thread messageHandling = new Thread() {
             public void run(){
                 int gameCounter = 0;
@@ -76,17 +77,28 @@ public class Server {
                     try{
                         Message message = (Message)messagesIN.take();
                         //handling message...
-                        System.out.println(message.getClienID());
-                        System.out.println(message.getContent());
+                        System.out.println("client ID: "+message.getClienID());
+                        System.out.println("game ID: "+message.getGameID());
+                        System.out.println("message code: "+message.getCode());
+                        System.out.println("content: "+message.getContent());
+                        
+                        
                         
                         if(message.getCode() == 1){
-                            try {
-                                gameList.get(message.getGameID()).executeCommand(message.getClienID(),message.getContent());
-                            } catch (IOException ex) {
-                                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                            if(message.getGameID() != -1){
+                                try {
+                                    gameList.get(message.getGameID()).executeCommand(message.getClienID(),message.getContent());
+                                } catch (IOException ex) {
+                                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                         }
                         else if(message.getCode() == 2){
+                            Message msg = new Message();
+                            msg.setClientID(message.getClienID());
+                            msg.setCode(6);
+                            msg.setGameID(gameCounter);
+                            messagesOUT.add(msg);
                             gameList.add(new Game(message.getContent(),gameCounter, server));
                             gameList.get(gameCounter).addPlayer(message.getClienID());
                             gameCounter++;
@@ -97,10 +109,12 @@ public class Server {
                         else if(message.getCode() == 4){
                             String runningGames = "";
                             for(int i = 0; i < gameList.size(); i++){
-                                runningGames.concat(gameList.get(i).getMapName()+":"+i); 
+                                if(i != 0) runningGames = runningGames.concat("@");
+                                runningGames = runningGames.concat(gameList.get(i).getMapName()+":"+i); 
                             }
                             Message msg = new Message();
-                            msg.setCode(5);
+                            msg.setClientID(message.getClienID());
+                            msg.setCode(4);
                             msg.setContent(runningGames);
                             messagesOUT.add(msg);
                         }
@@ -113,13 +127,20 @@ public class Server {
         messageHandling.setDaemon(true);
         messageHandling.start();
         
+        //odosielatel sprav
         Thread messageSender = new Thread() {
             public void run(){
                 while(true){
                     try{
                         Message message = (Message)messagesOUT.take();
                         //handling message...
-                        sendToAll(message);
+                        System.out.println("sender is sending to"+message.getClienID()+" "+message.getContent()+ " "+message.getCode());
+                        if(message.getCode() != 1){
+                            sendToOne(message.getClienID(),message);
+                        }
+                        else{
+                            sendToAll(message);
+                        }
                     }
                     catch(InterruptedException e){ }
                 }
@@ -163,11 +184,11 @@ public class Server {
         }
     }
 
-    public void sendToOne(int index, Message msg)throws IndexOutOfBoundsException {
+    public synchronized void sendToOne(int index, Message msg)throws IndexOutOfBoundsException {
         clientList.get(index).write(msg);
     }
 
-    public void sendToAll(Message msg){
+    public synchronized void sendToAll(Message msg){
         for(ConnectionToClient client : clientList)
             client.write(msg);
     }

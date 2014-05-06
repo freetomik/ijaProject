@@ -54,6 +54,6 @@ public class Key extends MatrixObject{
      */
     @Override
     public String getType(){
-        return "K";
+        return "k";
     }
 }

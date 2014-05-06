@@ -54,6 +54,6 @@ public class Wall extends MatrixObject {
      */
     @Override
     public String getType(){
-        return "W";
+        return "w";
     }
 }

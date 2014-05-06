@@ -6,6 +6,9 @@
 
 package matrix;
 
+import net.Server;
+import serialMessage.*;
+
 /**
  * Je trieda ktorá uchováva informácie o mape a hráčoch.
  * @author P.Kadlec, T.Hudziec
@@ -16,6 +19,7 @@ public class Matrix {
      * Je dvojrozmerené pole reprezentujúce hraciu plochu. 
      */
     protected MatrixField[][] map;
+    private Server server;
     
     /**
      * Konštruktor vytvorý mapu podla zadanej velkosti a naplní ju objektami.
@@ -23,8 +27,9 @@ public class Matrix {
      * @param x je počet stĺpcov mapy
      * @param y je počet riadkov mapy
      */
-    public Matrix(String fileContent, int x, int y){
+    public Matrix(String fileContent, int x, int y, Server server){
         this.map = new MatrixField[x][y];
+        this.server = server;
         
         for(int i=0; i<y ; i++){
             for(int j=0; j<x; j++){
@@ -68,6 +73,13 @@ public class Matrix {
         return mapString;
     }
     
+    public void updateMap(){
+        Message msg = new Message();
+        msg.setCode(1);
+        msg.setContent(getMapString());
+        server.addMessageOUT(msg);
+    }
+    
     /**
      * Vytvorí nového hráča, priradí mu identifikačné číslo a pokúsi
      * sa ním obsadiť políčko na zadaných súradniciach.
@@ -80,6 +92,7 @@ public class Matrix {
         Player tmpplayer = new Player(id,map[x][y], this);
         if(this.map[x][y].canSeize() == false) return null;
         this.map[x][y].seize(tmpplayer);
+        if(tmpplayer != null)updateMap();
         return tmpplayer;
     }
     

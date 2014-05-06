@@ -54,6 +54,6 @@ public class Finish extends MatrixObject{
      */
     @Override
     public String getType(){
-        return "F";
+        return "f";
     }
 }
