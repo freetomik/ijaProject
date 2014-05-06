@@ -144,7 +144,7 @@ public class Game {
     String fileLine;
     Scanner fileInput;
     try {
-      fileInput = new Scanner(new FileReader(fileName));
+      fileInput = new Scanner(new FileReader("examples/"+fileName));
       while(fileInput.hasNextLine()) {
         fileLine = fileInput.nextLine();  //cteni souboru po radcich
         len = fileLine.length();
