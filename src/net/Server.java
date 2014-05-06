@@ -26,9 +26,10 @@ public class Server {
     private ServerSocket serverSocket;
     private String maps;
 
-    public Server(int port) {
+    public Server(int port, final String maps) {
         clientList = new ArrayList<ConnectionToClient>();
         messagesIN = new LinkedBlockingQueue<Message>();
+        this.maps = maps;
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException ex) {
@@ -72,7 +73,11 @@ public class Server {
                         Message message = (Message)messagesIN.take();
                         //handling message...
                         if(message.getCode() == 1){
-                            gameList.get(message.getGameID()).executeCommand(message.getClienID(),message.getContent());
+                            try {
+                                gameList.get(message.getGameID()).executeCommand(message.getClienID(),message.getContent());
+                            } catch (IOException ex) {
+                                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
                         else if(message.getCode() == 2){
                             gameList.add(new Game(message.getContent(),gameCounter, this));
