@@ -25,6 +25,7 @@ public class Server {
     private LinkedBlockingQueue<Message> messagesOUT;
     private ServerSocket serverSocket;
     private String maps;
+    private Server server = this;
 
     public Server(int port, final String maps) {
         clientList = new ArrayList<ConnectionToClient>();
@@ -80,7 +81,7 @@ public class Server {
                             }
                         }
                         else if(message.getCode() == 2){
-                            gameList.add(new Game(message.getContent(),gameCounter, this));
+                            gameList.add(new Game(message.getContent(),gameCounter, server));
                             gameList.get(gameCounter).addPlayer(message.getClienID());
                             gameCounter++;
                         }
@@ -90,7 +91,7 @@ public class Server {
                         else if(message.getCode() == 4){
                             String runningGames = "";
                             for(int i = 0; i < gameList.size(); i++){
-                                runningGames.concat(gameList.get(i).getMapName+":"+i); 
+                                runningGames.concat(gameList.get(i).getMapName()+":"+i); 
                             }
                             Message msg = new Message();
                             msg.setCode(5);
