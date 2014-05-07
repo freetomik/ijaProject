@@ -38,8 +38,8 @@ public class Game {
     this.spawnPoints = new int[14];
     loadMap(this.mapName);  //ulozim si obsah souboru do fileContent
     this.server = server;
-    this.map = new Matrix(this.fileContent, this.width, this.height,server);
     this.gameID = gameID;
+    this.map = new Matrix(this.fileContent, this.width, this.height, server, this.gameID);
     this.players = new Player[4];
     this.clientIDs = new int[] {-1, -1, -1, -1};
     this.zombies = new Zombie[2];
