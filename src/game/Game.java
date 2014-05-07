@@ -64,6 +64,7 @@ public class Game {
       }
       this.players[this.playersCount] = tmpPlayer;    //ulozim noveho hrace do sveho pole hracu
       this.playersCount++;
+      System.out.println("game id "+gameID+" clientIDs "+clientIDs);
       return true;
     }
     return false;
@@ -132,7 +133,7 @@ public class Game {
         returnCode = false;
         break;
     }//switch
-    returnMessage.setClientID(playerIndex);
+    returnMessage.setClientID(clientIDs[playerIndex]);
     this.server.addMessageOUT(returnMessage); 
     return returnCode;
 

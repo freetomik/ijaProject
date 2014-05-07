@@ -134,13 +134,19 @@ public class Server {
                     try{
                         Message message = (Message)messagesOUT.take();
                         //handling message...
-                        System.out.println("sender is sending to"+message.getClienID()+" "+message.getContent()+ " "+message.getCode());
                         if(message.getCode() != 1){
                             sendToOne(message.getClienID(),message);
                         }
                         else{
-                            for(int client : gameList.get(message.getGameID()).getClientIDs()){
-                                if(client != -1)sendToOne(client,message);
+                            int[] client = client = gameList.get(message.getGameID()).getClientIDs();
+                            for(int i=0;i<4;i++){
+                                if(client[i] != -1){
+                                    System.out.println("+client ID: "+client[i]);
+                                    System.out.println("+game ID: "+message.getGameID());
+                                    System.out.println("+message code: "+message.getCode());
+                                    System.out.println("+content: "+message.getContent());
+                                    sendToOne(client[i],message);
+                                }
                             }
                         }
                     }
