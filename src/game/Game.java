@@ -62,6 +62,7 @@ public class Game {
         x = random.nextInt(7) * 2;
         tmpPlayer = this.map.createPlayer(this.playersCount, this.spawnPoints[x], this.spawnPoints[x+1]);
       }
+      this.players[this.playersCount] = tmpPlayer;    //ulozim noveho hrace do sveho pole hracu
       this.playersCount++;
       return true;
     }
