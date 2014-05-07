@@ -5,6 +5,7 @@ import net.*;
 import serialMessage.*;
 
 import java.util.Scanner;
+import java.util.Random;
 import java.io.*;
 
 /**
@@ -40,7 +41,7 @@ public class Game {
     this.map = new Matrix(this.fileContent, this.width, this.height,server);
     this.gameID = gameID;
     this.players = new Player[4];
-    this.clientIDs = new int[4];
+    this.clientIDs = new int[] {-1, -1, -1, -1};
     this.zombies = new Zombie[2];
     this.playersCount = 0;
   }
@@ -52,17 +53,16 @@ public class Game {
    * @return vraci zda se podarilo pridat hrace
    */
   public boolean addPlayer(int clientID) {
+    int x;
     Player tmpPlayer = null;
+    Random random = new Random();
     if(this.playersCount < 4) {
       this.clientIDs[this.playersCount] = clientID;
-      for(int i = 0; i < this.spawnPoints.length; i+=2) {
-        tmpPlayer = this.map.createPlayer(this.playersCount, this.spawnPoints[i], this.spawnPoints[i+1]);
-        if(tmpPlayer != null) {
-          this.players[this.playersCount] = tmpPlayer;
-          this.playersCount++;
-          return true;
-        }
+      while(tmpPlayer == null) {
+        x = random.nextInt(7) * 2;
+        tmpPlayer = this.map.createPlayer(this.playersCount, this.spawnPoints[x], this.spawnPoints[x+1]);
       }
+      return true;
     }
     return false;
   }
@@ -176,8 +176,12 @@ public class Game {
     } 
 }
 
-public String getMapName() {
-  return this.mapName;
-}
-  
+  public String getMapName() {
+    return this.mapName;
+  }
+
+  public int[] getClientIDs() {
+    return this.clientIDs;
+  }
+
 }
