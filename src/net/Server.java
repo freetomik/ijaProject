@@ -139,7 +139,9 @@ public class Server {
                             sendToOne(message.getClienID(),message);
                         }
                         else{
-                            sendToAll(message);
+                            for(int client : gameList.get(message.getGameID()).getClientIDs()){
+                                if(client != -1)sendToOne(client,message);
+                            }
                         }
                     }
                     catch(InterruptedException e){ }

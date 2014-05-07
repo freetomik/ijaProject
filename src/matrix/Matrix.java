@@ -20,6 +20,7 @@ public class Matrix {
      */
     protected MatrixField[][] map;
     private Server server;
+    private int gameID;
     
     /**
      * Konštruktor vytvorý mapu podla zadanej velkosti a naplní ju objektami.
@@ -27,9 +28,10 @@ public class Matrix {
      * @param x je počet stĺpcov mapy
      * @param y je počet riadkov mapy
      */
-    public Matrix(String fileContent, int x, int y, Server server){
+    public Matrix(String fileContent, int x, int y, Server server, int gamID){
         this.map = new MatrixField[x][y];
         this.server = server;
+        this.gameID = gameID;
         
         for(int i=0; i<y ; i++){
             for(int j=0; j<x; j++){
@@ -76,6 +78,7 @@ public class Matrix {
     public void updateMap(){
         Message msg = new Message();
         msg.setCode(1);
+        msg.setGameID(gameID);
         msg.setContent(getMapString());
         server.addMessageOUT(msg);
     }
