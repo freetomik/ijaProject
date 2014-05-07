@@ -130,7 +130,7 @@ public class Game {
         returnCode = false;
         break;
     }//switch
-
+    returnMessage.setClientID(playerIndex);
     this.server.addMessageOUT(returnMessage); 
     return returnCode;
 

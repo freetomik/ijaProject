@@ -122,13 +122,49 @@ public class MatrixField {
    public String getType(){
       if(this.object != null && this.object.getType().equals("F"))return this.object.getType();
       if(this.player != null){
-          switch (player.getDirection()){
-              case 0: return ">";
-              case 1: return "^";
-              case 2: return "<";
-              case 3: return "v";
-              default: return "p";
-          }
+            switch(player.getID()){
+                case 0:
+                {switch (player.getDirection()){
+                      case 0: return ">";
+                      case 1: return "^";
+                      case 2: return "<";
+                      case 3: return "v";
+                      default: return ".";
+                  }}
+                case 1:
+                {switch (player.getDirection()){
+                      case 0: return "a";
+                      case 1: return "b";
+                      case 2: return "c";
+                      case 3: return "d";
+                      default: return ".";
+                  }}
+                case 2:
+                {switch (player.getDirection()){
+                      case 0: return "0";
+                      case 1: return "1";
+                      case 2: return "2";
+                      case 3: return "3";
+                      default: return ".";
+                  }}
+                case 3:
+                {switch (player.getDirection()){
+                      case 0: return "4";
+                      case 1: return "5";
+                      case 2: return "6";
+                      case 3: return "7";
+                      default: return ".";
+                  }}
+                case 4:
+                {switch (player.getDirection()){
+                      case 0: return "q";
+                      case 1: return "r";
+                      case 2: return "s";
+                      case 3: return "t";
+                      default: return ".";
+                  }}
+                default: return ".";
+            }
       }
       if(this.object != null)return this.object.getType();
       else return ".";

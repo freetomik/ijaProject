@@ -144,4 +144,8 @@ public class Player {
         if(this.field.getType().equals("F")) return true;
         else return false;
     }
+    
+    public int getID(){
+        return id;
+    }
 }
